@@ -18,7 +18,7 @@ jobs:
       - name: build solution (mono-compatible)
         run: dotnet build MoonsecDeobfuscator.sln -c Release /p:UseAppHost=false
 
-      - name: upload artifacts
+      - name: upload mono-compatible exe
         uses: actions/upload-artifact@v4
         with:
           name: moonsecdeobfuscator
