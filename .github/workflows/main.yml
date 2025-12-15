@@ -17,7 +17,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: publish mono-compatible exe
-        run: dotnet publish MoonsecDeobfuscatorAPI.csproj /p:UseAppHost=false /p:SelfContained=false
+        run: dotnet publish MoonsecDeobfuscator.csproj /p:UseAppHost=false /p:SelfContained=false
 
       - name: find exe
         run: find . -name "MoonsecDeobfuscator*.exe"
