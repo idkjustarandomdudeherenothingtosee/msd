@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,15 +17,24 @@ jobs:
 
       - name: find csproj
         id: findproj
+        shell: pwsh
         run: |
-          proj=$(ls *.csproj | head -n 1)
-          echo "PROJECT=$proj" >> $GITHUB_OUTPUT
+          $proj = Get-ChildItem -Filter *.csproj | Select-Object -First 1
+          if (-not $proj) { throw "no csproj found" }
+          echo "project=$($proj.Name)" >> $env:GITHUB_OUTPUT
 
-      - name: publish project (mono-compatible)
-        run: dotnet publish ${{ steps.findproj.outputs.PROJECT }} /p:UseAppHost=false /p:SelfContained=false
+      - name: publish mono-compatible exe
+        shell: pwsh
+        run: |
+          dotnet publish ${{ steps.findproj.outputs.project }} `
+            -c Release `
+            /p:UseAppHost=false `
+            /p:SelfContained=false
 
-      - name: show exe location
-        run: find . -name "*.exe"
+      - name: list output
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter *.exe
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
