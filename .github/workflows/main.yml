@@ -1,44 +1,21 @@
-name: build-mono-exe
+name: deobfuscate
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
-  build:
+  run:
     runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: find csproj
-        id: findproj
-        shell: pwsh
+      - name: run deobfuscator
         run: |
-          $proj = Get-ChildItem -Filter *.csproj | Select-Object -First 1
-          if (-not $proj) { throw "no csproj found" }
-          echo "project=$($proj.Name)" >> $env:GITHUB_OUTPUT
+          MoonsecDeobfuscator.exe input.lua output.lua
 
-      - name: publish mono-compatible exe to known folder
-        shell: pwsh
-        run: |
-          mkdir publish
-          dotnet publish ${{ steps.findproj.outputs.project }} `
-            -c Release `
-            -o publish `
-            /p:UseAppHost=false `
-            /p:SelfContained=false
-
-      - name: list output
-        shell: pwsh
-        run: Get-ChildItem -Recurse publish
-
-      - name: upload artifact
+      - name: upload result
         uses: actions/upload-artifact@v4
         with:
-          name: moonsecdeobfuscator
-          path: publish/*.exe
+          name: output
+          path: output.lua
