@@ -1,19 +1,37 @@
-name: deobfuscate
+name: moonsec deobfuscate
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
-  run:
-    runs-on: windows-latest
+  deobfuscate:
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: restore
+        run: dotnet restore
+
+      - name: build
+        run: dotnet build -c Release --no-restore
 
       - name: run deobfuscator
-        run: .\MoonsecDeobfuscator.exe input.lua output.lua
+        run: |
+          dotnet run -c Release -- \
+            input.lua \
+            output.lua
 
-      - name: upload result
+      - name: upload output
         uses: actions/upload-artifact@v4
         with:
-          name: output
+          name: deobfuscated
           path: output.lua
