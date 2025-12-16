@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using MoonsecDeobfuscator.Deobfuscation;
-using MoonsecDeobfuscator.Deobfuscation.Bytecode;
+using MoonsecDeobfuscator.src.Deobfuscation;
+using MoonsecDeobfuscator.src.Deobfuscation.Bytecode;
 
 namespace MoonsecDeobfuscator
 {
