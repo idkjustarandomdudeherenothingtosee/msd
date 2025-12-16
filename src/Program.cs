@@ -1,54 +1,58 @@
-﻿using MoonsecDeobfuscator.Deobfuscation;
+using System;
+using System.IO;
+using MoonsecDeobfuscator.Deobfuscation;
 using MoonsecDeobfuscator.Deobfuscation.Bytecode;
 
-namespace MoonsecDeobfuscator;
-
-public static class Program
+namespace MoonsecDeobfuscator
 {
-    /*
-        Devirtualize and dump bytecode to file:
-            -dev -i <path to input> -o <path to output>
-
-        Devirtualize and dump bytecode disassembly to file:
-            -dis -i <path to input> -o <path to output>
-    */
-
-    static void Main(string[] args)
+    public static class Program
     {
-        if (args.Length != 5 || args[1] != "-i" || args[3] != "-o")
+        static void Main(string[] args)
         {
-            Console.WriteLine("Usage:");
-            Console.WriteLine("Devirtualize and dump bytecode to file:\n\t-dev -i <input> -o <output>");
-            Console.WriteLine("Devirtualize and dump bytecode disassembly to file:\n\t-dis -i <input> -o <output>");
-            return;
-        }
+            if (args.Length != 5 || args[1] != "-i" || args[3] != "-o")
+            {
+                Console.WriteLine("Usage:");
+                Console.WriteLine("Devirtualize and dump bytecode to file:\n\t-dev -i <input> -o <output>");
+                Console.WriteLine("Devirtualize and dump bytecode disassembly to file:\n\t-dis -i <input> -o <output>");
+                return;
+            }
 
-        var command = args[0];
-        var input = args[2];
-        var output = args[4];
+            string command = args[0];
+            string input = args[2];
+            string output = args[4];
 
-        if (!File.Exists(input))
-        {
-            Console.WriteLine("Invalid input path!");
-            return;
-        }
+            if (!File.Exists(input))
+            {
+                Console.WriteLine("Invalid input path!");
+                return;
+            }
 
-        if (command == "-dev")
-        {
-            var result = new Deobfuscator().Deobfuscate(File.ReadAllText(input));
-            using var stream = new FileStream(output, FileMode.Create, FileAccess.Write);
-            using var serializer = new Serializer(stream);
+            Deobfuscator deob = new Deobfuscator();
+            string source = File.ReadAllText(input);
 
-            serializer.Serialize(result);
-        }
-        else if (command == "-dis")
-        {
-            var result = new Deobfuscator().Deobfuscate(File.ReadAllText(input));
-            File.WriteAllText(output, new Disassembler(result).Disassemble());
-        }
-        else
-        {
-            Console.WriteLine("Invalid command!");
+            if (command == "-dev")
+            {
+                BytecodeChunk result = deob.Deobfuscate(source);
+
+                FileStream stream = new FileStream(output, FileMode.Create, FileAccess.Write);
+                Serializer serializer = new Serializer(stream);
+
+                serializer.Serialize(result);
+
+                serializer.Dispose();
+                stream.Dispose();
+            }
+            else if (command == "-dis")
+            {
+                BytecodeChunk result = deob.Deobfuscate(source);
+                Disassembler dis = new Disassembler(result);
+
+                File.WriteAllText(output, dis.Disassemble());
+            }
+            else
+            {
+                Console.WriteLine("Invalid command!");
+            }
         }
     }
 }
